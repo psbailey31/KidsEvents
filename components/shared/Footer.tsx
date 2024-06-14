@@ -14,7 +14,8 @@ const Footer = () => {
             />
             <p className="pl-2 pt-2 text-sky-800">Kids Events</p>
         </Link>
-        <p>&copy; 2024 Kids Events. All Rights Reserved.</p>
+        <p>&copy; 2024 Kids Events. All Rights Reserved.<br />
+        <small><small><a href="https://pikbest.com//png-images/kids-play-holi_10063682.html">Free png images from pikbest.com</a></small></small></p>
         </div>
     </footer>
   )
