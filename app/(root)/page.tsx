@@ -1,4 +1,6 @@
+import CategoryFilter from "@/components/shared/CategoryFilter";
 import Collection from "@/components/shared/Collection";
+import Search from "@/components/shared/Search";
 import { Button } from "@/components/ui/button";
 import { getAllEvents } from "@/lib/actions/event.actions";
 import Category from "@/lib/database/models/category.model";
@@ -12,7 +14,7 @@ export default async function Home({ searchParams }: SearchParamProps) {
   const category = (searchParams?.category as string) || '';
 
   const events = await getAllEvents({
-    query: searchText,
+    query: '',
     category,
     page,
     limit: 6
@@ -50,8 +52,8 @@ export default async function Home({ searchParams }: SearchParamProps) {
       <section id="events" className="my-8 wrapper flex flex-col gap-8 md:gap-12">
 
         <div className="flex w-full flex-col gap-5 md:flex-row">
-          Search
-          Category Filter
+          <Search />
+          <CategoryFilter />
         </div>
 
         <Collection 
