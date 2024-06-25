@@ -8,6 +8,13 @@ export type CreateUserParams = {
   photo: string
 }
 
+export type CreateStripeParams = {
+  clerkId: string
+  userId: string
+  signedUp: boolean
+  paymentSetup: boolean
+}
+
 export type UpdateUserParams = {
   firstName: string
   lastName: string

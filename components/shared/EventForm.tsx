@@ -52,7 +52,6 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
 
     if(files.length > 0) {
       const uploadedImages = await startUpload(files)
-      alert("Uploading")
       if(!uploadedImages) {
         return
       }
