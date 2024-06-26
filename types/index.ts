@@ -12,7 +12,7 @@ export type CreateStripeParams = {
   clerkId: string
   userId: string
   signedUp: boolean
-  paymentSetup: boolean
+  connectedAccountId: string
 }
 
 export type UpdateUserParams = {

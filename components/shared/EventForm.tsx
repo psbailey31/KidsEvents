@@ -11,7 +11,7 @@ import { eventDefaultValues } from "@/constants/constants"
 import Dropdown from "./Dropdown"
 import { Textarea } from "@/components/ui/textarea"
 import { FileUploader } from "./FileUploader"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { useUploadThing } from '@/lib/uploadthing'
 import DatePicker from 'react-datepicker';
@@ -20,7 +20,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useRouter } from "next/navigation"
 import { createEvent, updateEvent } from "@/lib/actions/event.actions"
 import { IEvent } from "@/lib/database/models/event.model"
-
+import {createStripeAccountLink, getStripeUserById } from "@/lib/actions/stripe.actions";
+import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from "@/components/ui/dialog"; // Import the modal components
 
 type EventFormProps = {
   userId: string
@@ -31,6 +32,7 @@ type EventFormProps = {
 
 const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
   const [files, setFiles] = useState<File[]>([])
+  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
   const initialValues = event && type === 'Update' 
     ? { 
       ...event, 
@@ -46,7 +48,31 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
     resolver: zodResolver(eventFormSchema),
     defaultValues: initialValues
   })
- 
+
+  useEffect(() => {
+    async function checkUserStatus() {
+      try {
+        const userStripeData = await getStripeUserById(userId);
+        if (userStripeData && (!userStripeData.signedUp || !userStripeData.paymentSetup)) {
+          setIsModalOpen(true); // Open modal if Stripe setup is incomplete
+        }
+      } catch (error) {
+        console.error("Error fetching user Stripe data:", error);
+      }
+    }
+
+    checkUserStatus();
+  }, [userId, router]);
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    router.push("/"); // Redirect to home page
+  };
+
+  const handleConfirmModal = () => {
+    router.push("/stripe-connect");
+  };
+
   async function onSubmit(values: z.infer<typeof eventFormSchema>) {
     let uploadedImageUrl = values.imageUrl;
 
@@ -98,6 +124,19 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
       }
     }
   }
+
+  const handleCreateAccount = async () => {
+
+    try {
+      const account = await createStripeAccountLink(userId);
+      console.log('Stripe Account created:', account);
+      // You can also handle redirection or showing success messages here
+    } 
+    catch (error: any) {
+      console.log(error)
+    } 
+  };
+
 
   return (
     <Form {...form}>
@@ -315,7 +354,6 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
             />
         </div>
 
-
         <Button 
           type="submit"
           size="lg"
@@ -326,6 +364,32 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
             'Submitting...'
           ): `${type} Event `}</Button>
       </form>
+      <Dialog open={isModalOpen} onOpenChange={(open) => !open && handleCloseModal()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Uh-oh, you need a Stripe Account!
+            </DialogTitle>
+          </DialogHeader>
+          <DialogDescription className="pt-6 pb-6">
+            Your account does not appear to have been set up in Stripe. <br /><br />You need to do this before creating an event, otherwise you cannot be paid for tickets purchased.
+          </DialogDescription>
+          <DialogFooter>
+            <Button size="lg"  
+              onClick={handleCloseModal}
+              className="w-[50%] button px-4 py-2 pt-2 pb-2 bg-gray-500 text-white rounded-lg hover:bg-gray-300 "
+            >
+              I will set up my <br />event later
+            </Button>
+            <Button size="lg" 
+              onClick={handleCreateAccount}
+              className="w-[50%] button px-4 py-2 pt-2 pb-2 bg-sky-800 text-white rounded-lg hover:bg-blue-600"
+            >
+              Set up my <br />Stripe Account Now
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Form>
   )
 }

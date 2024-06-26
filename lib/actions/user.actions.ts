@@ -6,6 +6,7 @@ import { connectToDatabase } from '@/lib/database'
 import User from '@/lib/database/models/user.model'
 import Order from '@/lib/database/models/order.model'
 import Event from '@/lib/database/models/event.model'
+import Stripe from '@/lib/database/models/stripe.model'
 import { handleError } from '@/lib/utils'
 
 import { CreateUserParams, UpdateUserParams } from '@/types'
@@ -69,6 +70,9 @@ export async function deleteUser(clerkId: string) {
       // Update the 'orders' collection to remove references to the user
       Order.updateMany({ _id: { $in: userToDelete.orders } }, { $unset: { buyer: 1 } }),
     ])
+
+    //Remove Stripe Account details
+    Stripe.findByIdAndDelete(userToDelete._id)
 
     // Delete user
     const deletedUser = await User.findByIdAndDelete(userToDelete._id)

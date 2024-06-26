@@ -79,13 +79,13 @@ export async function POST(req: Request) {
         clerkId: id,
         userId: newUser._id,
         signedUp: false,
-        paymentSetup: false,
+        connectedAccountId: '',
       }
   
       const newStripeUser = await createStripeUser(stripeUser);
 
       console.log(JSON.stringify(newStripeUser));
-      
+
     }
 
     return NextResponse.json({ message: 'OK', user: newUser })
