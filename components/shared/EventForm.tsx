@@ -126,16 +126,21 @@ const EventForm = ({ userId, type, event, eventId }: EventFormProps) => {
   }
 
   const handleCreateAccount = async () => {
-
     try {
-      const account = await createStripeAccountLink(userId);
-      console.log('Stripe Account created:', account);
-      // You can also handle redirection or showing success messages here
-    } 
-    catch (error: any) {
-      console.log(error)
-    } 
+      const response = await fetch('/api/stripe', {
+        method: 'POST',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create Stripe account');
+      }
+      const data = await response.json();
+      console.log('Stripe Account Link:', data.accountLink);
+      window.location.href = data.accountLink.url;
+    } catch (error: any) {
+      console.log(error);
+    }
   };
+  
 
 
   return (
